@@ -10,7 +10,7 @@ function extendObj (a, b) {
 }
  
 // New (>= 0.4) function StreamingS3(stream, awsConfig, s3Params, options, cb)
-function StreamingS3(stream, s3AccessKey, s3SecretKey, s3Params, options, cb) {
+function StreamingS3(stream, client, s3Params, options, cb) {
   var self = this;
   
   // Lets hook our error event in the start so we can easily emit errors.
@@ -49,19 +49,7 @@ function StreamingS3(stream, s3AccessKey, s3SecretKey, s3Params, options, cb) {
     }
   });
   
-  
-  var awsConfigObject = {accessKeyId: s3AccessKey, secretAccessKey: s3SecretKey};
-  
-  if (typeof s3AccessKey == 'object') {
-    cb = options;
-    options = s3Params;
-    s3Params = s3SecretKey;
-    awsConfigObject = s3AccessKey;
-    s3AccessKey = awsConfigObject.accessKeyId;
-    s3SecretKey = awsConfigObject.secretAccessKey;
-  }
-  
-  if (typeof options == 'function') {
+   if (typeof options == 'function') {
     cb = options;
     options = {};
   }
@@ -77,10 +65,6 @@ function StreamingS3(stream, s3AccessKey, s3SecretKey, s3Params, options, cb) {
   options = extendObj(defaultOptions, options);
   this.options = options;
   
-  if (options.sdkRetries) awsConfigObject.maxRetries = options.sdkRetries;
-  
-  // S3 Parameters and properties
-  aws.config.update(awsConfigObject);
   this.s3ObjectParams = {
     Bucket: s3Params.Bucket || s3Params.bucket,
     Key: s3Params.Key || s3Params.key
@@ -114,7 +98,7 @@ function StreamingS3(stream, s3AccessKey, s3SecretKey, s3Params, options, cb) {
   
   
   this.s3Params = s3Params;
-  this.s3Client = this.getNewS3Client();
+  this.s3Client = client;
   this.uploadId = null;
   this.cb = cb;
   
@@ -132,10 +116,6 @@ function StreamingS3(stream, s3AccessKey, s3SecretKey, s3Params, options, cb) {
 }
 
 util.inherits(StreamingS3, EventEmitter);
-
-StreamingS3.prototype.getNewS3Client = function() {
-  return (new aws.S3());
-};
 
 StreamingS3.prototype.begin = function() {
   if (this.initiated || this.finished) return;
