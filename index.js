@@ -1,6 +1,6 @@
 var EventEmitter = require('events').EventEmitter,
     util = require('util'),
-    async = require('async'),
+    async = require('async');
 
 function extendObj (a, b) {
   for (var x in b) a[x] = b[x];
@@ -213,7 +213,7 @@ StreamingS3.prototype.sendToS3 = function() {
     if (!self.uploadId || !self.initiated || self.failed || chunk.uploading || chunk.finished || chunk.number < 0) return next();
     
     chunk.uploading = true;
-    chunk.client = chunk.client ? chunk.client : self.s3Client();
+    chunk.client = chunk.client ? chunk.client : self.s3Client;
     
     var partS3Params = {
       UploadId: self.uploadId,
